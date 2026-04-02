@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Horaires du Portail</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .page { padding: 20px 20px 0; }
+
+  /* Hero card */
+  .hero-card {
+    background: var(--card);
+    border-radius: 24px;
+    padding: 28px 24px;
+    border: 1.5px solid var(--border);
+    box-shadow: var(--shadow);
+    text-align: center;
+    animation: fadeUp 0.45s var(--ease) both;
+  }
+  .hero-icon { font-size: 44px; margin-bottom: 12px; display: block; }
+  .hero-label {
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    margin-bottom: 8px;
+  }
+  .hero-time {
+    font-size: 52px; font-weight: 900; letter-spacing: -2px;
+    line-height: 1; font-variant-numeric: tabular-nums; margin-bottom: 6px;
+  }
+  .hero-detail { font-size: 14px; color: var(--sub); font-weight: 500; }
+
+  .hero-card.open   { border-color: rgba(34,197,94,0.3); }
+  .hero-card.open .hero-label { color: var(--green); }
+  .hero-card.open .hero-time  { color: var(--green); }
+
+  .hero-card.soon   { border-color: rgba(245,158,11,0.3); }
+  .hero-card.soon .hero-label { color: var(--orange); }
+  .hero-card.soon .hero-time  { color: var(--orange); }
+
+  .hero-card.late   { border-color: rgba(239,68,68,0.3); }
+  .hero-card.late .hero-label { color: var(--red); }
+  .hero-card.late .hero-time  { color: var(--red); }
+
+  .hero-card.closed { border-color: var(--border); }
+  .hero-card.closed .hero-label { color: var(--sub); }
+  .hero-card.closed .hero-time  { color: var(--dim); }
+
+  /* Next list */
+  .next-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .next-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card); padding: 14px 16px;
+    border-radius: var(--radius); border: 1px solid var(--border);
+  }
+  .next-item .ni-time {
+    font-size: 15px; font-weight: 700;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .next-item .ni-dur { font-size: 12px; color: var(--dim); font-weight: 500; }
+  .next-item .ni-badge {
+    margin-left: auto; font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 50px; text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .badge-open { background: var(--green-soft); color: var(--green); }
+  .badge-next { background: var(--orange-soft); color: var(--orange); }
+  .badge-soon { background: var(--accent-soft); color: var(--accent); }
+
+  /* All slots */
+  .all-slots { display: none; }
+  .all-slots.show { display: block; }
+
+  .period-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--dim); margin: 16px 0 8px;
+  }
+  .slot-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 0; border-bottom: 1px solid rgba(0,0,0,0.04);
+  }
+  .slot-row:last-child { border-bottom: none; }
+  .slot-row .sr-time { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .slot-row .sr-dur { font-size: 11px; color: var(--dim); font-weight: 500; }
+  .slot-row .sr-status { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--dim); }
+  .slot-row.sr-active .sr-status { color: var(--green); }
+  .slot-row.sr-past { opacity: 0.35; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-title">Portail</span>
+  <span class="topbar-clock" id="clock">--:--</span>
+  <a class="topbar-settings" href="settings.html">⚙</a>
+</div>
+
+<div class="page">
+  <!-- Hero -->
+  <div class="hero-card mb-20" id="hero">
+    <span class="hero-icon" id="heroIcon">⏳</span>
+    <div class="hero-label" id="heroLabel">Chargement</div>
+    <div class="hero-time" id="heroTime">--:--</div>
+    <div class="hero-detail" id="heroDetail"></div>
+  </div>
+
+  <!-- Next slots -->
+  <div class="section-label">Prochaines ouvertures</div>
+  <div class="next-list mb-20" id="nextList"></div>
+
+  <!-- Toggle all -->
+  <button class="toggle-btn mb-16" id="toggleBtn" onclick="toggleAll()">
+    Voir tous les horaires <span class="arrow">▼</span>
+  </button>
+
+  <!-- All slots -->
+  <div class="all-slots" id="allSlots"></div>
+</div>
+
+<div class="navbar">
+  <a href="index.html"><img src="assets/badge-id.png" alt=""></a>
+  <a href="gate_slots.html" class="active"><img src="assets/clock.png" alt=""></a>
+  <a href="notes.html"><img src="assets/reminders.png" alt=""></a>
+</div>
+
+<script>
+const SLOTS = [
+  {start:'07:45',end:'08:05'},{start:'08:50',end:'09:05'},
+  {start:'09:55',end:'10:15'},{start:'11:00',end:'11:15'},
+  {start:'12:00',end:'12:35'},{start:'12:55',end:'13:10'},
+  {start:'13:30',end:'14:05'},{start:'14:55',end:'15:05'},
+  {start:'15:55',end:'16:15'},{start:'17:00',end:'17:10'},
+  {start:'17:05',end:'17:15'},{start:'17:25',end:'17:35'},
+  {start:'18:00',end:'18:15'},{start:'18:05',end:'18:20'},
+].sort((a,b)=>a.start.localeCompare(b.start));
+
+function toMin(t){const[h,m]=t.split(':').map(Number);return h*60+m;}
+function pad(n){return String(n).padStart(2,'0');}
+function dur(a,b){const d=toMin(b)-toMin(a);return d>=60?`${Math.floor(d/60)}h${d%60>0?d%60+'min':''}`:`${d} min`;}
+
+function update(){
+  const now=new Date(), nowM=now.getHours()*60+now.getMinutes();
+  document.getElementById('clock').textContent=`${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+  let active=null, nexts=[];
+  for(const s of SLOTS){
+    const sS=toMin(s.start), sE=toMin(s.end);
+    if(nowM>=sS&&nowM<=sE) active=s;
+    else if(sS>nowM&&nexts.length<3) nexts.push(s);
+  }
+
+  const hero=document.getElementById('hero'), icon=document.getElementById('heroIcon'),
+        label=document.getElementById('heroLabel'), time=document.getElementById('heroTime'),
+        detail=document.getElementById('heroDetail');
+  hero.className='hero-card mb-20';
+
+  if(active){
+    hero.classList.add('open');icon.textContent='🔓';label.textContent='Portail ouvert';
+    time.textContent=`${active.start} → ${active.end}`;
+    detail.textContent=`Ferme dans ${toMin(active.end)-nowM} min`;
+  } else if(nexts.length){
+    const nxt=nexts[0], diff=toMin(nxt.start)-nowM;
+    if(diff<=10){hero.classList.add('late');icon.textContent='🏃';label.textContent='Dépêche-toi !';}
+    else{hero.classList.add('soon');icon.textContent='⏳';label.textContent='Fermé';}
+    time.textContent=nxt.start;detail.textContent=`Ouvre dans ${diff} min`;
+  } else {
+    hero.classList.add('closed');icon.textContent='🔒';label.textContent='Terminé';
+    time.textContent='--:--';detail.textContent="Plus d'ouverture aujourd'hui";
+  }
+
+  // Next list
+  const list=document.getElementById('nextList');
+  list.innerHTML='';
+  const items=active?[active,...nexts.slice(0,2)]:nexts.slice(0,3);
+  items.forEach(s=>{
+    const diff=toMin(s.start)-nowM; let badge='';
+    if(active&&s===active) badge=`<span class="ni-badge badge-open">Ouvert</span>`;
+    else if(diff>0&&diff<=10) badge=`<span class="ni-badge badge-soon">${diff} min</span>`;
+    else if(diff>10) badge=`<span class="ni-badge badge-next">${diff} min</span>`;
+    list.innerHTML+=`<div class="next-item"><div><div class="ni-time">${s.start} → ${s.end}</div><div class="ni-dur">${dur(s.start,s.end)}</div></div>${badge}</div>`;
+  });
+
+  // All slots
+  const all=document.getElementById('allSlots'); all.innerHTML='';
+  let cp='';
+  SLOTS.forEach(s=>{
+    const h=parseInt(s.start.split(':')[0]);
+    const p=h<12?'Matin':h<17?'Après-midi':'Soirée';
+    if(p!==cp){all.innerHTML+=`<div class="period-label">${p}</div>`;cp=p;}
+    let cls='slot-row';
+    if(active&&s===active) cls+=' sr-active';
+    else if(nowM>toMin(s.end)) cls+=' sr-past';
+    let st='';
+    if(active&&s===active) st='EN COURS';
+    else if(nowM>toMin(s.end)) st='✓';
+    all.innerHTML+=`<div class="${cls}"><span class="sr-time">${s.start} → ${s.end}</span><span class="sr-dur">${dur(s.start,s.end)}</span><span class="sr-status">${st}</span></div>`;
+  });
+}
+
+function toggleAll(){
+  document.getElementById('allSlots').classList.toggle('show');
+  document.getElementById('toggleBtn').classList.toggle('open');
+}
+
+update();
+setInterval(update,30000);
+</script>
+</body>
+</html>
