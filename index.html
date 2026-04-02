@@ -2,219 +2,320 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Carte Lycéen</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
 <style>
+  .page { padding: 20px; }
 
-  html, body {
-    margin: 0;
-    padding: 0;
+  .photo-area {
     width: 100%;
-    height: 100%;
-    font-family: 'Nunito', sans-serif;
-    background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+    aspect-ratio: 3/4;
+    max-height: 480px;
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    border: 1.5px dashed var(--border);
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    gap: 12px;
     overflow: hidden;
-    color: #f5f5f5;
+    box-shadow: var(--shadow);
+    position: relative;
   }
 
-  #photoContainer {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: transparent;
+  .photo-area .placeholder-icon {
+    font-size: 48px;
+    opacity: 0.3;
   }
 
-  #photoContainer img {
+  .photo-area .placeholder-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dim);
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  .photo-area img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    border-radius: 22px;
-    box-shadow: 0 12px 45px rgba(0,0,0,0.55);
-    animation: fadeIn 0.6s ease;
   }
 
-  #takePhoto {
-    position: absolute;
-    z-index: 10;
-    padding: 14px 28px;
-    font-size: 18px;
-    font-weight: 600;
-    border-radius: 50px;
-    border: none;
+  /* Tap hint */
+  .tap-hint {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--dim);
+    font-weight: 500;
+    display: none;
+  }
+
+  .photo-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .photo-actions .btn { flex: 1; }
+
+  .name-display {
+    margin-top: 16px;
+    text-align: center;
+  }
+
+  .name-display .name-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .name-display .name-sub {
+    font-size: 13px;
+    color: var(--sub);
+    margin-top: 4px;
+  }
+
+  #cameraInput { display: none; }
+
+  .photo-area.has-photo {
+    border-style: solid;
+    border-color: rgba(34,197,94,0.2);
     cursor: pointer;
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(14px);
-    box-shadow: 0 6px 25px rgba(0,0,0,0.4);
-    color: #ffffffcc;
-    transition: all 0.3s ease;
   }
 
-  #takePhoto:hover {
-    transform: scale(1.05);
-    background: rgba(255,255,255,0.15);
-    color: #fff;
+  /* ── Fullscreen overlay ──────────────── */
+  .fullscreen-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: #fff;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
 
-  .navbar {
-  position: fixed;
-  bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  height: 72px;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  background: rgba(40, 40, 40, 0.85); /* + opaque */
-  backdrop-filter: blur(18px);
-  border-radius: 26px;
-  border: 1px solid rgba(255,255,255,0.15); /* fin contour clair */
-  box-shadow: 0 12px 35px rgba(0,0,0,0.65); /* ombre plus marquée */
-  z-index: 10;
-}
-
-
-  .navbar a img {
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  .fullscreen-overlay.show {
+    display: flex;
   }
 
-  .navbar a img:hover {
-    transform: scale(1.2);
-    box-shadow: 0 4px 20px rgba(255,255,255,0.2);
+  .fullscreen-overlay img {
+    max-width: 100%;
+    max-height: calc(100vh - 80px);
+    object-fit: contain;
+    padding: 16px;
+    animation: zoomIn 0.25s var(--ease);
   }
-  
-  .navbar a {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
-.navbar a.active::before {
-  content: "";
-  position: absolute;
-  top: -8px;
-  left: -8px;
-  width: calc(100% + 16px);
-  height: calc(100% + 16px);
-  border-radius: 18px;
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.45), inset 0 0 12px rgba(255,255,255,0.2);
-  transition: all 0.3s ease;
-  z-index: -1;
-}
+  @keyframes zoomIn {
+    from { transform: scale(0.92); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
 
+  .fullscreen-close {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 24px;
+    border-radius: 50px;
+    background: rgba(0,0,0,0.06);
+    border: none;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(0,0,0,0.4);
+    cursor: pointer;
+  }
 
-.settings {
-  position: fixed;
-  top: 8px; /* remonte un peu */
-  left: 5px;
-  z-index: 15; /* derrière le bouton photo qui est à z-index:10 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.3s ease;
-
-}
-.settings img {
-  width: 58px;
-  height: 58px;
-  opacity: 0.85;
-}
-
-
-  @keyframes fadeIn {
-    from {opacity: 0; transform: scale(0.97);}
-    to {opacity: 1; transform: scale(1);}
+  .fullscreen-brightness {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.06);
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>
 </head>
 <body>
 
-<button id="takePhoto">📸 Prendre ma Carte Lycéen</button>
-<div id="photoContainer"></div>
-<input type="file" accept="image/*" capture="environment" id="cameraInput" style="display:none;">
+<!-- Topbar -->
+<div class="topbar">
+  <span class="topbar-title">Carte Lycéen</span>
+  <a class="topbar-settings" href="settings.html">⚙</a>
+</div>
+
+<!-- Page content -->
+<div class="page">
+  <div class="photo-area" id="photoArea">
+    <span class="placeholder-icon">🪪</span>
+    <span class="placeholder-text">Prends en photo ta carte lycéen pour l'avoir toujours sur toi</span>
+  </div>
+
+  <div class="tap-hint" id="tapHint">Appuie sur la carte pour l'afficher en grand</div>
+
+  <input type="file" accept="image/*" capture="environment" id="cameraInput">
+
+  <div class="photo-actions" id="photoActions">
+    <button class="btn" id="takePhotoBtn">📸 Prendre la photo</button>
+  </div>
+
+  <div class="photo-actions" id="photoActionsEdit" style="display:none;">
+    <button class="btn btn-ghost" id="retakeBtn">🔄 Reprendre</button>
+    <button class="btn btn-danger btn-sm" id="deleteBtn">Supprimer</button>
+  </div>
+
+  <div class="name-display" id="nameDisplay" style="display:none;">
+    <div class="name-text" id="nameText"></div>
+    <div class="name-sub">Carte lycéen sauvegardée</div>
+  </div>
+</div>
+
+<!-- Fullscreen overlay -->
+<div class="fullscreen-overlay" id="fullscreenOverlay">
+  <img src="" id="fullscreenImg">
+  <button class="fullscreen-close">Tapez n'importe où pour fermer</button>
+  <button class="fullscreen-brightness" id="brightnessBtn">🔆</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <!-- Navbar -->
 <div class="navbar">
-  <a href="cl.html" class="active"><img src="badge-id.png"></a>
-  <a href="cc.html"><img src="lunch.png"></a>
-  <a href="clock.html"><img src="clock.png"></a>
-  <a href="soon m.html"><img src="reminders.png"></a>
-</div>
-
-<div class="settings">
-  <a href="soon c.html"><img src="settings.png"></a>
+  <a href="index.html" class="active"><img src="assets/badge-id.png" alt=""></a>
+  <a href="gate_slots.html"><img src="assets/clock.png" alt=""></a>
+  <a href="notes.html"><img src="assets/reminders.png" alt=""></a>
 </div>
 
 <script>
-const cameraInput = document.getElementById("cameraInput");
-const takePhotoBtn = document.getElementById("takePhoto");
-const photoContainer = document.getElementById("photoContainer");
-const storageKey = "carteLycéen";
+const STORAGE_KEY = 'carteLycéen';
+const PROFILE_KEY = 'profilLycéen';
+const cameraInput = document.getElementById('cameraInput');
+const photoArea = document.getElementById('photoArea');
+const photoActions = document.getElementById('photoActions');
+const photoActionsEdit = document.getElementById('photoActionsEdit');
+const nameDisplay = document.getElementById('nameDisplay');
+const nameText = document.getElementById('nameText');
+const tapHint = document.getElementById('tapHint');
+const fullscreenOverlay = document.getElementById('fullscreenOverlay');
+const fullscreenImg = document.getElementById('fullscreenImg');
+const toast = document.getElementById('toast');
 
-takePhotoBtn.addEventListener("click", () => cameraInput.click());
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2200);
+}
 
-cameraInput.addEventListener("change", (event) => {
-  const file = event.target.files[0];
-  if(file){
-    const reader = new FileReader();
-    reader.onload = e => {
-      const dataURL = e.target.result;
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxWidth = 1024;
-        const maxHeight = 1024;
-        let width = img.width;
-        let height = img.height;
+function showPhoto(src) {
+  photoArea.innerHTML = `<img src="${src}">`;
+  photoArea.classList.add('has-photo');
+  photoActions.style.display = 'none';
+  photoActionsEdit.style.display = 'flex';
+  tapHint.style.display = 'block';
+  const name = localStorage.getItem(PROFILE_KEY);
+  nameDisplay.style.display = 'block';
+  nameText.textContent = name || 'Carte sauvegardée';
+}
 
-        // conserver les proportions
-        if(width > height && width > maxWidth){
-          height = height * (maxWidth / width);
-          width = maxWidth;
-        } else if(height >= width && height > maxHeight){
-          width = width * (maxHeight / height);
-          height = maxHeight;
-        }
+function showPlaceholder() {
+  photoArea.innerHTML = `
+    <span class="placeholder-icon">🪪</span>
+    <span class="placeholder-text">Prends en photo ta carte lycéen pour l'avoir toujours sur toi</span>`;
+  photoArea.classList.remove('has-photo');
+  photoActions.style.display = 'flex';
+  photoActionsEdit.style.display = 'none';
+  tapHint.style.display = 'none';
+  nameDisplay.style.display = 'none';
+}
 
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
+// Fullscreen
+function openFullscreen() {
+  const src = localStorage.getItem(STORAGE_KEY);
+  if (!src) return;
+  fullscreenImg.src = src;
+  fullscreenOverlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
 
-        // convertir en JPEG compressé
-        const smallDataURL = canvas.toDataURL('image/jpeg', 0.7);
-        localStorage.setItem(storageKey, smallDataURL);
-        photoContainer.innerHTML = `<img src="${smallDataURL}">`;
-        takePhotoBtn.style.display = "none";
-      };
-      img.src = dataURL;
-    };
-    reader.readAsDataURL(file);
-  }
+function closeFullscreen() {
+  fullscreenOverlay.classList.remove('show');
+  document.body.style.overflow = '';
+  // Reset brightness
+  document.body.style.filter = '';
+}
+
+photoArea.addEventListener('click', (e) => {
+  if (photoArea.classList.contains('has-photo')) openFullscreen();
 });
 
-window.addEventListener("load", () => {
-  const saved = localStorage.getItem(storageKey);
-  if(saved){
-    photoContainer.innerHTML = `<img src="${saved}">`;
-    takePhotoBtn.style.display = "none";
-  }
+fullscreenOverlay.addEventListener('click', (e) => {
+  if (e.target.closest('.fullscreen-brightness')) return;
+  closeFullscreen();
+});
+
+// Brightness toggle
+let bright = false;
+document.getElementById('brightnessBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  bright = !bright;
+  document.getElementById('brightnessBtn').textContent = bright ? '🔅' : '🔆';
+  document.body.style.filter = bright ? 'brightness(1.3)' : '';
+});
+
+document.getElementById('takePhotoBtn').addEventListener('click', () => cameraInput.click());
+
+document.getElementById('retakeBtn').addEventListener('click', () => cameraInput.click());
+
+document.getElementById('deleteBtn').addEventListener('click', () => {
+  localStorage.removeItem(STORAGE_KEY);
+  showPlaceholder();
+  showToast('Carte supprimée');
+});
+
+cameraInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      // High res for fullscreen display
+      const max = 2048;
+      let w = img.width, h = img.height;
+      if (w > h && w > max) { h = h * (max / w); w = max; }
+      else if (h >= w && h > max) { w = w * (max / h); h = max; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const dataURL = canvas.toDataURL('image/jpeg', 0.85);
+      localStorage.setItem(STORAGE_KEY, dataURL);
+      showPhoto(dataURL);
+      showToast('Carte sauvegardée !');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  cameraInput.value = '';
+});
+
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) showPhoto(saved);
 });
 </script>
-
 </body>
 </html>

@@ -2,252 +2,437 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Paramètres</title>
+<link rel="stylesheet" href="style.css">
 <style>
-  @font-face {
-    font-family: 'agrandir';
-    src: url(Agrandir-Regular.otf) format('opentype');
-  }
+  .page { padding: 20px; }
 
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    min-height: 100%;
-    font-family: 'agrandir', sans-serif;
-    background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: #f5f5f5;
-  }
-
-  .container {
-    width: 90%;
-    max-width: 500px;
+  /* Profile card */
+  .profile-card {
+    background: var(--card);
+    border-radius: var(--radius-xl);
     padding: 24px;
-    margin-top: 50px;
-    border-radius: 22px;
-    background: rgba(40, 40, 40, 0.85);
-    backdrop-filter: blur(14px);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.65);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
     text-align: center;
-      max-height: calc(100vh - 100px); /* 100px = hauteur approximative de la navbar + marge */
-  overflow-y: auto; /* pour que le contenu puisse défiler si trop long */
-  padding-bottom: 100px; /* espace sous les boutons pour que la navbar ne les cache pas */
-    
+    margin-bottom: 20px;
+    animation: fadeUp 0.4s var(--ease) both;
   }
 
-  h1 {
-    margin-bottom: 24px;
-    font-size: 28px;
-    background: linear-gradient(45deg, #ffffff, #bbbbbb);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  h3 {
-    margin-top: 30px;
-    margin-bottom: 10px;
-    font-size: 22px;
-    color: #ffffffcc;
-  }
-
-  input[type="text"], input[type="file"] {
-    width: 80%;
-    padding: 10px 12px;
-    margin: 10px 0;
-    border-radius: 14px;
-    border: none;
-    background: rgba(255,255,255,0.08);
-    color: #fff;
-    font-size: 16px;
-    backdrop-filter: blur(10px);
-    transition: background 0.3s;
-  }
-
-  input[type="text"]:focus {
-    background: rgba(255,255,255,0.15);
-    outline: none;
-  }
-
-  button {
-    padding: 12px 24px;
-    margin: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 50px;
-    border: none;
-    cursor: pointer;
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(14px);
-    color: #ffffffcc;
-    transition: all 0.3s ease;
-  }
-
-  button:hover {
-    transform: scale(1.05);
-    background: rgba(255,255,255,0.15);
-    color: #fff;
-  }
-
-  #profileDisplay {
-    margin-top: 20px;
-    font-size: 18px;
-  }
-
-  #profilePhoto {
-    width: 120px;
-    height: 120px;
+  .avatar {
+    width: 80px; height: 80px;
     border-radius: 50%;
-    object-fit: cover;
-    margin-top: 10px;
-    box-shadow: 0 6px 25px rgba(0,0,0,0.4);
-  }
-
-  .navbar {
-    position: fixed;
-    bottom: 14px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    height: 72px;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    margin: 0 auto 12px;
     display: flex;
-    justify-content: space-around;
     align-items: center;
-    background: rgba(40, 40, 40, 0.85);
-    backdrop-filter: blur(18px);
-    border-radius: 26px;
-    border: 1px solid rgba(255,255,255,0.15);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.65);
-    z-index: 10;
+    justify-content: center;
+    font-size: 32px;
+    color: var(--dim);
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.2s ease;
+    position: relative;
+  }
+  .avatar:active { transform: scale(0.95); }
+
+  .avatar img {
+    width: 100%; height: 100%;
+    object-fit: cover;
   }
 
-  .navbar a img {
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-  }
-
-  .navbar a img:hover {
-    transform: scale(1.2);
-    box-shadow: 0 4px 20px rgba(255,255,255,0.2);
-  }
-
-  .msg {
-    margin-top: 20px;
-    font-size: 16px;
+  .avatar .avatar-edit {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
     opacity: 0;
-    transition: opacity 0.5s ease;
+    transition: 0.2s ease;
+  }
+  .avatar:hover .avatar-edit,
+  .avatar:active .avatar-edit { opacity: 1; }
+
+  .profile-name {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 4px;
   }
 
-  .msg.visible {
-    opacity: 1;
+  .profile-sub {
+    font-size: 13px;
+    color: var(--sub);
+  }
+
+  /* Section group */
+  .section-group {
+    margin-bottom: 20px;
+  }
+
+  .section-group-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--dim);
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+
+  .settings-card {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .setting-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 15px 18px;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    cursor: pointer;
+    transition: 0.15s ease;
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-row:active { background: rgba(0,0,0,0.02); }
+
+  .setting-row .sr-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+
+  .setting-row .sr-content { flex: 1; }
+  .setting-row .sr-label { font-size: 15px; font-weight: 600; }
+  .setting-row .sr-desc { font-size: 12px; color: var(--sub); margin-top: 2px; }
+
+  .setting-row .sr-arrow {
+    font-size: 14px;
+    color: var(--dim);
+  }
+
+  .setting-row.danger .sr-label { color: var(--red); }
+  .setting-row.danger .sr-desc { color: rgba(239,68,68,0.5); }
+
+  /* Icon backgrounds */
+  .bg-orange { background: rgba(245,158,11,0.1); }
+  .bg-red    { background: rgba(239,68,68,0.08); }
+  .bg-blue   { background: rgba(59,130,246,0.08); }
+  .bg-green  { background: rgba(34,197,94,0.08); }
+  .bg-purple { background: rgba(168,85,247,0.08); }
+
+  /* Edit name modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 40;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+
+  .modal-box {
+    width: 100%;
+    max-width: 360px;
+    background: var(--card);
+    border-radius: var(--radius-xl);
+    padding: 28px 24px;
+    animation: fadeUp 0.3s var(--ease);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .modal-box h3 {
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 16px;
+  }
+
+  .modal-box .input { margin-bottom: 14px; }
+
+  .modal-box .modal-btns {
+    display: flex; gap: 8px;
+  }
+
+  .modal-box .modal-btns .btn { flex: 1; justify-content: center; }
+
+  /* Confirm dialog */
+  .confirm-text {
+    font-size: 14px;
+    color: var(--text-mid);
+    line-height: 1.6;
+    margin-bottom: 18px;
   }
 </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>Paramètres</h1>
-
-  <h3>Profil</h3>
-  <input type="text" id="inputName" placeholder="Votre nom complet">
-  <input type="file" id="inputPhoto" accept="image/*">
-  <button id="saveProfile">Enregistrer le profil</button>
-  
-  <div id="profileDisplay"></div>
-  <img id="profilePhoto" src="" alt="" style="display:none;">
-
-  <h3>Cartes</h3>
-  <button id="deleteCard">🪪 Supprimer la carte lycéen</button>
-  <button id="deleteLunchCard">🍽️ Supprimer la carte cantine</button>
-
-  <div id="message" class="msg"></div>
+<div class="topbar">
+  <a class="topbar-back" href="index.html">←</a>
+  <span class="topbar-title">Paramètres</span>
+  <div style="width:38px"></div>
 </div>
 
+<div class="page">
+  <!-- Profile -->
+  <div class="profile-card">
+    <div class="avatar" id="avatar" onclick="document.getElementById('photoInput').click()">
+      <span id="avatarPlaceholder">👤</span>
+      <img id="avatarImg" src="" style="display:none;">
+      <div class="avatar-edit">📷</div>
+    </div>
+    <input type="file" id="photoInput" accept="image/*" style="display:none;">
+    <div class="profile-name" id="profileName">Non défini</div>
+    <div class="profile-sub" id="profileSub">Appuie pour modifier</div>
+  </div>
+
+  <!-- Nom -->
+  <div class="section-group">
+    <div class="section-group-title">Profil</div>
+    <div class="settings-card">
+      <div class="setting-row" onclick="openNameModal()">
+        <div class="sr-icon bg-blue">✏️</div>
+        <div class="sr-content">
+          <div class="sr-label">Modifier le nom</div>
+          <div class="sr-desc" id="nameDesc">Aucun nom défini</div>
+        </div>
+        <span class="sr-arrow">›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Données -->
+  <div class="section-group">
+    <div class="section-group-title">Données</div>
+    <div class="settings-card">
+      <div class="setting-row" onclick="confirmDelete('carteLycéen','la carte lycéen')">
+        <div class="sr-icon bg-orange">🪪</div>
+        <div class="sr-content">
+          <div class="sr-label">Supprimer la carte lycéen</div>
+          <div class="sr-desc">Retire la photo de ta carte</div>
+        </div>
+        <span class="sr-arrow">›</span>
+      </div>
+      <div class="setting-row" onclick="confirmDelete('carteCantine','la carte cantine')">
+        <div class="sr-icon bg-purple">🍽️</div>
+        <div class="sr-content">
+          <div class="sr-label">Supprimer la carte cantine</div>
+          <div class="sr-desc">Retire la photo de ta carte cantine</div>
+        </div>
+        <span class="sr-arrow">›</span>
+      </div>
+      <div class="setting-row" onclick="confirmDelete('kju_notes','tes notes')">
+        <div class="sr-icon bg-green">📝</div>
+        <div class="sr-content">
+          <div class="sr-label">Supprimer toutes les notes</div>
+          <div class="sr-desc">Supprime définitivement toutes tes notes</div>
+        </div>
+        <span class="sr-arrow">›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Danger zone -->
+  <div class="section-group">
+    <div class="section-group-title">Zone danger</div>
+    <div class="settings-card">
+      <div class="setting-row danger" onclick="confirmReset()">
+        <div class="sr-icon bg-red">💥</div>
+        <div class="sr-content">
+          <div class="sr-label">Tout réinitialiser</div>
+          <div class="sr-desc">Supprime toutes tes données</div>
+        </div>
+        <span class="sr-arrow">›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div class="section-group">
+    <div class="section-group-title">Application</div>
+    <div class="settings-card">
+      <div class="setting-row">
+        <div class="sr-icon bg-blue">📱</div>
+        <div class="sr-content">
+          <div class="sr-label">KJU Connect</div>
+          <div class="sr-desc">Version 1.0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Name edit modal -->
+<div class="modal-overlay" id="nameModal">
+  <div class="modal-box">
+    <h3>Modifier le nom</h3>
+    <input type="text" class="input" id="nameInput" placeholder="Ton nom complet…">
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeNameModal()">Annuler</button>
+      <button class="btn" onclick="saveName()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <h3 id="confirmTitle">Confirmer</h3>
+    <div class="confirm-text" id="confirmText"></div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Annuler</button>
+      <button class="btn btn-danger" id="confirmAction">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
 <div class="navbar">
-  <a href="cl.html"><img src="badge-id.png" alt="Carte Lycéen"></a>
-  <a href="cc.html"><img src="lunch.png" alt="Carte Cantine"></a>
-  <a href="clock.html"><img src="clock.png" alt="Horaires"></a>
-  <a href="soon m.html"><img src="reminders.png" alt="Mémos"></a>
+  <a href="index.html"><img src="assets/badge-id.png" alt=""></a>
+  <a href="gate_slots.html"><img src="assets/clock.png" alt=""></a>
+  <a href="notes.html"><img src="assets/reminders.png" alt=""></a>
 </div>
 
 <script>
-const storageKeyCard = "carteLycéen";
-const storageKeyLunch = "carteCantine";
-const storageKeyProfile = "profilLycéen";
-const storageKeyPhoto = "profilPhoto";
+const PROFILE_KEY = 'profilLycéen';
+const PHOTO_KEY = 'profilPhoto';
 
-const inputName = document.getElementById("inputName");
-const inputPhoto = document.getElementById("inputPhoto");
-const saveProfileBtn = document.getElementById("saveProfile");
-const profileDisplay = document.getElementById("profileDisplay");
-const profilePhoto = document.getElementById("profilePhoto");
-const deleteCardBtn = document.getElementById("deleteCard");
-const deleteLunchCardBtn = document.getElementById("deleteLunchCard");
-const messageBox = document.getElementById("message");
-
-// Fonction message animé
-function showMessage(text, color="#66ff99") {
-  messageBox.textContent = text;
-  messageBox.style.color = color;
-  messageBox.classList.add("visible");
-  setTimeout(() => messageBox.classList.remove("visible"), 2500);
+const toast = document.getElementById('toast');
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2200);
 }
 
-// Charger les données sauvegardées
-window.addEventListener("load", () => {
-  const savedProfile = localStorage.getItem(storageKeyProfile);
-  const savedPhoto = localStorage.getItem(storageKeyPhoto);
+// Load profile
+function loadProfile() {
+  const name = localStorage.getItem(PROFILE_KEY);
+  const photo = localStorage.getItem(PHOTO_KEY);
 
-  if(savedProfile){
-    profileDisplay.textContent = "Nom : " + savedProfile;
-    inputName.value = savedProfile;
+  if (name) {
+    document.getElementById('profileName').textContent = name;
+    document.getElementById('nameDesc').textContent = name;
+    document.getElementById('profileSub').textContent = 'Appuie pour modifier';
   }
-  if(savedPhoto){
-    profilePhoto.src = savedPhoto;
-    profilePhoto.style.display = "block";
+  if (photo) {
+    document.getElementById('avatarImg').src = photo;
+    document.getElementById('avatarImg').style.display = 'block';
+    document.getElementById('avatarPlaceholder').style.display = 'none';
   }
-});
+}
 
-// Enregistrer le profil
-saveProfileBtn.addEventListener("click", () => {
-  const name = inputName.value.trim();
-  if(name){
-    localStorage.setItem(storageKeyProfile, name);
-    profileDisplay.textContent = "Nom : " + name;
-  }
-
-  const file = inputPhoto.files[0];
-  if(file){
-    const reader = new FileReader();
-    reader.onload = e => {
-      const dataURL = e.target.result;
-      localStorage.setItem(storageKeyPhoto, dataURL);
-      profilePhoto.src = dataURL;
-      profilePhoto.style.display = "block";
+// Photo upload
+document.getElementById('photoInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      const max = 256;
+      let w = img.width, h = img.height;
+      if (w > h && w > max) { h = h*(max/w); w = max; }
+      else if (h >= w && h > max) { w = w*(max/h); h = max; }
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      const dataURL = c.toDataURL('image/jpeg', 0.7);
+      localStorage.setItem(PHOTO_KEY, dataURL);
+      document.getElementById('avatarImg').src = dataURL;
+      document.getElementById('avatarImg').style.display = 'block';
+      document.getElementById('avatarPlaceholder').style.display = 'none';
+      showToast('Photo de profil modifiée');
     };
-    reader.readAsDataURL(file);
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+// Name modal
+function openNameModal() {
+  const name = localStorage.getItem(PROFILE_KEY) || '';
+  document.getElementById('nameInput').value = name;
+  document.getElementById('nameModal').classList.add('show');
+  setTimeout(() => document.getElementById('nameInput').focus(), 100);
+}
+
+function closeNameModal() {
+  document.getElementById('nameModal').classList.remove('show');
+}
+
+function saveName() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (name) {
+    localStorage.setItem(PROFILE_KEY, name);
+    document.getElementById('profileName').textContent = name;
+    document.getElementById('nameDesc').textContent = name;
+    showToast('Nom modifié');
   }
+  closeNameModal();
+}
 
-  showMessage("✅ Profil enregistré !");
+document.getElementById('nameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveName();
 });
 
-// Supprimer la carte lycéen
-deleteCardBtn.addEventListener("click", () => {
-  localStorage.removeItem(storageKeyCard);
-  showMessage("🗑️ Carte lycéen supprimée !");
+// Confirm delete
+let pendingAction = null;
+
+function confirmDelete(key, label) {
+  pendingAction = () => {
+    localStorage.removeItem(key);
+    showToast(`${label.charAt(0).toUpperCase() + label.slice(1)} supprimé(e)`);
+  };
+  document.getElementById('confirmTitle').textContent = 'Confirmer la suppression';
+  document.getElementById('confirmText').textContent = `Tu vas supprimer ${label}. Cette action est irréversible.`;
+  document.getElementById('confirmAction').onclick = () => { pendingAction(); closeConfirm(); };
+  document.getElementById('confirmModal').classList.add('show');
+}
+
+function confirmReset() {
+  pendingAction = () => {
+    const keys = ['carteLycéen','carteCantine','kju_notes',PROFILE_KEY,PHOTO_KEY];
+    keys.forEach(k => localStorage.removeItem(k));
+    showToast('Tout a été réinitialisé');
+    setTimeout(() => location.reload(), 800);
+  };
+  document.getElementById('confirmTitle').textContent = 'Tout réinitialiser ?';
+  document.getElementById('confirmText').textContent = 'Toutes tes données vont être supprimées : carte lycéen, carte cantine, notes et profil.';
+  document.getElementById('confirmAction').onclick = () => { pendingAction(); closeConfirm(); };
+  document.getElementById('confirmModal').classList.add('show');
+}
+
+function closeConfirm() {
+  document.getElementById('confirmModal').classList.remove('show');
+  pendingAction = null;
+}
+
+// Close modals on overlay click
+document.getElementById('nameModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('nameModal')) closeNameModal();
+});
+document.getElementById('confirmModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('confirmModal')) closeConfirm();
 });
 
-// Supprimer la carte de cantine
-deleteLunchCardBtn.addEventListener("click", () => {
-  localStorage.removeItem(storageKeyLunch);
-  showMessage("🍽️ Carte cantine supprimée !");
-});
+loadProfile();
 </script>
-
 </body>
 </html>
